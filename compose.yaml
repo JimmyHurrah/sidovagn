@@ -1,0 +1,22 @@
+services:
+  fluentbit:
+      image: cr.fluentbit.io/fluent/fluent-bit:2.0.9
+      command: /fluent-bit/bin/fluent-bit -c /fluent-bit/etc/fluent_bit.conf
+      ports: 
+        - 24224:24224
+      volumes:
+        - ./fluent_bit.conf:/fluent-bit/etc/fluent_bit.conf
+        - ./logs:/logs
+
+  app:
+    depends_on: 
+      - fluentbit
+    image: mcr.microsoft.com/dotnet/sdk:6.0
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+    volumes:
+      - ./app:/app
+    working_dir: /app
+    command: dotnet run 
